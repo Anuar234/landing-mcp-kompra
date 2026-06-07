@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Подключение MCP-коннектора · для тестировщиков</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0e0f;
+    --panel:#15181a;
+    --panel-2:#1c2023;
+    --line:#2a2f33;
+    --ink:#eef1ee;
+    --muted:#8a938c;
+    --accent:#ff6b35;
+    --accent-soft:#ff6b3522;
+    --green:#5ddc8c;
+    --mono:'Space Mono',ui-monospace,monospace;
+    --sans:'Sora',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(60% 50% at 85% -5%, #ff6b3514 0%, transparent 60%),
+      radial-gradient(40% 40% at 0% 100%, #5ddc8c0d 0%, transparent 55%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:48px 22px 90px}
+
+  /* header */
+  .kicker{
+    font-family:var(--mono);font-size:12px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:10px;margin-bottom:18px;
+  }
+  .kicker .dot{width:8px;height:8px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 4px #5ddc8c1f;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  h1{font-weight:800;font-size:clamp(30px,6vw,46px);line-height:1.05;letter-spacing:-.02em}
+  h1 .hl{color:var(--accent)}
+  .lede{color:var(--muted);font-size:17px;margin-top:16px;max-width:54ch}
+
+  /* url block */
+  .urlcard{
+    margin:34px 0 10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:16px;padding:20px 18px;
+  }
+  .urlcard .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .urlrow{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+  .url{
+    flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:14px;
+    background:var(--bg);border:1px solid var(--line);border-radius:10px;
+    padding:14px 14px;color:var(--ink);overflow-x:auto;white-space:nowrap;
+    display:flex;align-items:center;
+  }
+  .copy{
+    flex:0 0 auto;font-family:var(--mono);font-size:13px;font-weight:700;
+    background:var(--accent);color:#1a0d06;border:none;border-radius:10px;
+    padding:0 20px;cursor:pointer;transition:.15s;letter-spacing:.04em;
+  }
+  .copy:hover{filter:brightness(1.08)}
+  .copy.done{background:var(--green);color:#06200f}
+
+  /* steps */
+  section{margin-top:46px}
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:22px}
+  .sec-head h2{font-size:24px;font-weight:600;letter-spacing:-.01em}
+  .tag{font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:6px;
+    border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+  .tag.ok{color:var(--green);border-color:#5ddc8c40}
+
+  ol.steps{list-style:none;counter-reset:s}
+  ol.steps li{
+    counter-increment:s;position:relative;padding:0 0 22px 48px;
+    border-left:1px solid var(--line);margin-left:14px;
+  }
+  ol.steps li:last-child{border-left-color:transparent;padding-bottom:4px}
+  ol.steps li::before{
+    content:counter(s);position:absolute;left:-15px;top:-2px;
+    width:30px;height:30px;border-radius:50%;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--accent);
+    font-family:var(--mono);font-size:13px;font-weight:700;
+    display:grid;place-items:center;
+  }
+  ol.steps b{color:var(--ink)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);
+    color:var(--accent);padding:2px 7px;border-radius:5px;
+    border:1px solid #ff6b3530;white-space:nowrap}
+  .path{font-family:var(--mono);font-size:.86em;color:var(--ink);
+    background:var(--bg);border:1px solid var(--line);border-radius:6px;
+    padding:2px 8px;display:inline-block;line-height:1.7}
+  .muted{color:var(--muted)}
+
+  /* prompts */
+  .prompts{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:8px 6px;margin-top:8px}
+  .prompts .p{padding:13px 16px;font-family:var(--mono);font-size:13.5px;
+    color:var(--ink);border-bottom:1px solid var(--line);display:flex;gap:11px}
+  .prompts .p:last-child{border-bottom:none}
+  .prompts .p span{color:var(--accent)}
+
+  /* note */
+  .note{margin-top:30px;background:#ff6b350d;border:1px solid #ff6b3530;
+    border-radius:14px;padding:18px 20px}
+  .note h3{font-size:15px;color:var(--accent);margin-bottom:8px;
+    font-family:var(--mono);letter-spacing:.04em}
+  .note p{font-size:14.5px;color:#d6cabf}
+  .note p+p{margin-top:9px}
+
+  footer{margin-top:54px;padding-top:24px;border-top:1px solid var(--line);
+    font-family:var(--mono);font-size:12px;color:var(--muted);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  /* entrance */
+  .reveal{opacity:0;transform:translateY(14px);animation:rise .6s ease forwards}
+  .reveal:nth-child(2){animation-delay:.06s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @media(max-width:520px){.copy{flex:1 1 100%;padding:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="reveal">
+    <div class="kicker"><span class="dot"></span>server · live</div>
+    <h1>Подключите наш <span class="hl">MCP-сервер</span><br>и протестируйте его</h1>
+    <p class="lede">Этот сервер работает не в браузере, а внутри ИИ-ассистента (ChatGPT или Claude). Добавьте его как коннектор по инструкции ниже — это занимает 1–2 минуты.</p>
+  </div>
+
+  <div class="urlcard reveal">
+    <div class="lbl">URL MCP-сервера</div>
+    <div class="urlrow">
+      <div class="url" id="url">https://grace-uneroded-nonhectically.ngrok-free.dev/mcp</div>
+      <button class="copy" id="copyBtn">Копировать</button>
+    </div>
+  </div>
+  <p class="muted" style="font-size:13px;margin-top:10px">⚠️ Не открывайте этот адрес прямо в браузере — там покажется техническая ошибка. Это нормально: адрес нужен ассистенту, а не браузеру.</p>
+
+  <!-- ChatGPT -->
+  <section>
+    <div class="sec-head">
+      <h2>В ChatGPT</h2>
+      <span class="tag">Plus · Pro · Business · Enterprise · web</span>
+    </div>
+    <ol class="steps">
+      <li>Откройте ChatGPT в <b>браузере</b> (на телефоне в приложении пункта может не быть).</li>
+      <li>Перейдите в <span class="path">Настройки → Приложения и коннекторы → Расширенные настройки</span> и включите <b>Режим разработчика</b> (Developer mode). Подтвердите предупреждение.</li>
+      <li>Там же нажмите <b>«Создать»/«Добавить коннектор»</b> и вставьте скопированный URL.</li>
+      <li>Сохраните. В окне чата нажмите кнопку инструментов и <b>включите наш коннектор</b> для диалога.</li>
+      <li>Напишите запрос и при необходимости попросите явно использовать инструмент. ChatGPT спросит подтверждение — разрешите.</li>
+    </ol>
+  </section>
+
+  <!-- Claude -->
+  <section>
+    <div class="sec-head">
+      <h2>В Claude</h2>
+      <span class="tag ok">Free · Pro · Max · Team · Enterprise</span>
+    </div>
+    <ol class="steps">
+      <li>Откройте Claude (claude.ai, десктоп или приложение).</li>
+      <li>Перейдите в <span class="path">Settings / Настройки → Connectors (Коннекторы)</span>.</li>
+      <li>Нажмите <b>«+»</b> рядом с Connectors → <b>«Add custom connector»</b> (Добавить свой коннектор).</li>
+      <li>Введите любое <b>имя</b> и вставьте <b>URL</b> сервера. Нажмите <b>«Add»</b>.</li>
+      <li>В чате нажмите <b>«+»</b> слева внизу → <b>Connectors</b> и включите наш коннектор. Готово — можно спрашивать.</li>
+    </ol>
+    <p class="muted" style="font-size:13px;margin-left:14px">На бесплатном тарифе доступен один кастомный коннектор.</p>
+  </section>
+
+  <!-- Test prompts -->
+  <section>
+    <div class="sec-head">
+      <h2>Что попробовать</h2>
+      <span class="tag">тест-промпты</span>
+    </div>
+    <div class="prompts">
+      <div class="p"><span>›</span> Сделай полную проверку контрагента по БИН 170940011140 через коннектор Kompra</div>
+      <div class="p"><span>›</span> Проверь по санкционным спискам имя Putin и покажи, за что</div>
+      <div class="p"><span>›</span> Покажи судебные дела по БИН 150140024604</div>
+    </div>
+    <p class="muted" style="font-size:13px;margin-top:12px">Если ассистент не вызывает инструмент сам — попросите явно «используя коннектор Kompra».</p>
+  </section>
+
+  <!-- Note -->
+  <div class="note">
+    <h3>важно знать</h3>
+    <p><b>Адрес временный.</b> Он живёт, только пока запущен наш сервер с ngrok. После презентации ссылка может перестать работать — тестируйте в день демо.</p>
+    <p><b>Если коннектор не подключается:</b> проверьте, что URL начинается с <code>https://</code> и заканчивается на <code>/mcp</code>, и что наш сервер сейчас запущен.</p>
+  </div>
+
+  <footer>
+    <span>MCP connector · тест-доступ</span>
+    <span>обновлено перед демо</span>
+  </footer>
+
+</div>
+
+<script>
+  const btn=document.getElementById('copyBtn');
+  const url=document.getElementById('url').textContent.trim();
+  btn.addEventListener('click',async()=>{
+    try{
+      await navigator.clipboard.writeText(url);
+    }catch(e){
+      const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);
+      t.select();document.execCommand('copy');t.remove();
+    }
+    btn.textContent='Скопировано ✓';btn.classList.add('done');
+    setTimeout(()=>{btn.textContent='Копировать';btn.classList.remove('done')},1800);
+  });
+</script>
+</body>
+</html>
